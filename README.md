@@ -4,6 +4,15 @@ A comprehensive collection of Linux system administration knowledge, covering ev
 
 ---
 
+## Start here
+
+- [Browse by topic](docs/topics.md) for Linux concepts, commands, and troubleshooting.
+- [Latest additions and reading queue](LATEST.md) to pick up where you left off.
+- [Add or update a note](CONTRIBUTING.md) using the helper or a template.
+- [Inbox](inbox/README.md) for ideas to file later.
+
+The detailed reference and Red Hat learning tracks are below.
+
 ## 📚 Table of Contents
 
 - [🎯 Red Hat Certification Tracks](#-red-hat-certification-tracks)

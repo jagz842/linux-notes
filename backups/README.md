@@ -214,3 +214,9 @@ pg_dump -U postgres -F c database_name > /backup/db_backup.pgdump
 - **Remote backup?** → `rsync` / `AWS S3`  
 - **Enterprise backup?** → `Bacula` / `Duplicity`  
 - **Database backup?** → `mysqldump` / `pg_dump`  
+
+[Home](../README.md) · [All topics](../docs/topics.md) · [Reading queue](../LATEST.md)
+
+## New notes
+
+<!-- new-notes -->
