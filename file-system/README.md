@@ -12,4 +12,4 @@
 ## New notes
 
 <!-- new-notes -->
-- [Disk space troubleshooting: deleted open files](../disk/deleted-open-files.md)
+- [Find deleted open files with lsof](../disk/deleted-open-files.md)

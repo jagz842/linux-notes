@@ -9,7 +9,7 @@ The initial entries use the last recorded Git change date for each note. Their r
 ## Reading queue
 
 <!-- entries -->
-- [ ] 2026-11-25 — [Deleted open files](disk/deleted-open-files.md) — Diagnose and reclaim disk space held by unlinked files.
+- [ ] 2026-11-25 — [Find deleted open files with lsof](disk/deleted-open-files.md) — Use lsof to diagnose disk space held by unlinked files.
 - [ ] 2026-10-03 — [FFmpeg commands](ffmpeg.md)
 - [ ] 2026-09-21 — [VirtualBox to ESXi migration](virtualization/virtualbox-to-esxi.md)
 - [ ] 2026-04-22 — [Download a Hugging Face model](AI/download-hf-model.md)

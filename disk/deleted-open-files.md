@@ -1,6 +1,6 @@
-# The disk was full, but the big file was gone
+# Finding deleted open files with `lsof`: the disk was full, but the big file was gone
 
-*This is a fictional incident based on a common Linux troubleshooting scenario. The names, sizes, and output are examples.*
+In this fictional incident, a system administrator uses `lsof` to find a deleted log file that is still consuming disk space. The scenario is based on a common Linux troubleshooting problem; the names, sizes, and output are examples.
 
 ## The alert
 
