@@ -1,6 +1,6 @@
 # Finding deleted open files with `lsof`: the disk was full, but the big file was gone
 
-In this fictional incident, a system administrator uses `lsof` to find a deleted log file that is still consuming disk space. The scenario is based on a common Linux troubleshooting problem; the names, sizes, and output are examples.
+Follow a system administrator using `lsof` to find a deleted log file that is still consuming disk space. The names, sizes, and command output below are examples.
 
 ## The alert
 
@@ -57,6 +57,15 @@ myapp    2481 app    4w   REG    8,1 60129542144     0 1234 /var/log/myapp/app.l
 ```
 
 There was the missing log: roughly 56 GiB, marked `(deleted)`, and still open by process `2481`. The `4w` in the `FD` column meant file descriptor **4**, open for writing.
+
+| Field | Example | What it tells Sara |
+| --- | --- | --- |
+| `COMMAND` | `myapp` | The process holding the file open. |
+| `PID` | `2481` | The process ID. |
+| `FD` | `4w` | Descriptor 4 is open for writing. |
+| `SIZE/OFF` | `60129542144` | The logical file size in bytes. |
+| `NLINK` | `0` | The file has no remaining directory links. |
+| `NAME` | `app.log (deleted)` | The file was deleted but remains open. |
 
 The size shown by `lsof` is the file's logical size, which can differ from its allocated disk space. Multiple entries may also refer to the same file, so their sizes should not automatically be added together.
 
