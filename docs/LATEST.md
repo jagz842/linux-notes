@@ -1,10 +1,10 @@
-# Latest additions and reading queue
+# Latest learning and read later
 
 [Home](../README.md) · [Topics](topics.md) · [Inbox](../notes/inbox/README.md) · [Adding notes](CONTRIBUTING.md)
 
-New entries go at the top. Unchecked entries are ready for review. Check them off when you finish and keep them here as a learning history.
+Read an unchecked entry when you have time, then tick it off. Keep checked entries here as a learning history.
 
-The initial entries use the last recorded Git change date for each note. Their review status is unknown, so they start unchecked.
+The note helper adds a dated entry at the top of the queue. For notes added manually or substantially revised, [log the change yourself](CONTRIBUTING.md#add-or-update-a-note-manually).
 
 ## Reading queue
 
@@ -20,3 +20,8 @@ The initial entries use the last recorded Git change date for each note. Their r
 - [ ] 2026-03-18 — [Types of APT updates](../notes/packages/apt/types-of-updates.md)
 - [ ] 2026-03-16 — [SSH jump hosts](../notes/ssh/ssh-jumphost.md)
 - [ ] 2026-02-23 — [Domain mirroring](../notes/security/encryption/domain-mirroring.md)
+
+## Repository maintenance
+
+- 2026-11-25 — Grouped the notes under topic folders and moved the queue here.
+- 2026-11-19 — Started the reading queue. Its initial entries use the latest recorded Git change date for each note and started unchecked because their review status was unknown.

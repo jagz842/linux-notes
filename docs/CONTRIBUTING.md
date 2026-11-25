@@ -27,7 +27,7 @@ Use the [note template](templates/note.md) for a concept or the [lab template](t
 - [ ] YYYY-MM-DD — [Note title](../notes/topic/note-title.md) — One sentence about what you added.
 ```
 
-For a substantial revision, prefix the link with **Updated** and use the revision date. Spelling fixes and file moves do not need a queue entry.
+For a substantial revision, add a new unchecked entry with the revision date and prefix the link with **Updated**. Log changes that add new learning material, such as a new example or a revised troubleshooting procedure.
 
 ## Keep the collection navigable
 
