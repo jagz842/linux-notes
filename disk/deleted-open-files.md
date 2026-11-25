@@ -1,50 +1,94 @@
-# Disk space troubleshooting: deleted open files
+# The disk was full, but the big file was gone
 
-## Symptom
+*This is a fictional incident based on a common Linux troubleshooting scenario. The names, sizes, and output are examples.*
 
-`df` reports filesystem usage, while `du` totals allocated space for files it can see in a directory tree. If `df` shows a full filesystem but `du` reports much less usage, deleted files still held open by processes are one possible cause.
+## The alert
 
-Compare the same filesystem, replacing `/` with its mount point:
+It was a busy Monday morning when Sara, a system administrator, received an alert: the root filesystem on an application server was full. Soon afterward, the application started reporting errors when it tried to write new data.
+
+Sara checked the server:
 
 ```bash
 df -h /
-df -i /
+```
+
+```text
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/sda1       100G   96G     0 100% /
+```
+
+A teammate mentioned that an unusually large application log had been deleted a few minutes earlier. Sara expected the deletion to have recovered space, but the filesystem was still full.
+
+## The numbers don't add up
+
+Sara checked how much space the visible files on the root filesystem were using:
+
+```bash
 sudo du -xsh /
 ```
 
-`-x` keeps `du` on one filesystem, and `sudo` lets it inspect directories inaccessible to an ordinary user. Healthy inode usage rules out inode exhaustion at that moment, but does not establish the cause of a space mismatch. Other causes include files hidden beneath mount points, filesystem metadata, reserved blocks, snapshots, and inaccessible directories.
+```text
+40G    /
+```
 
-## Why it happens
+That was much less than the usage reported by `df`. She also checked the inodes:
 
-Removing a file with `rm` unlinks a directory entry. If its last link is removed while a process still has the file open, the kernel retains the file and its allocated blocks until the remaining references are released. `du` cannot find the unlinked file by walking the directory tree, but `df` still accounts for its blocks.
+```bash
+df -i /
+```
 
-## Find the files
+Inode usage was healthy, so the immediate problem was not inode exhaustion. The mismatch was a clue, though not proof of a deleted file: hidden files beneath mount points, filesystem metadata, reserved blocks, snapshots, and inaccessible directories can also contribute to differences.
+
+Sara had used `sudo` so `du` could inspect protected directories, and `-x` to keep it on the same filesystem. Without those options, the comparison could be misleading.
+
+## The missing log
+
+Sara suspected that the deleted log was still open. She asked `lsof` to list open files with fewer than one link:
 
 ```bash
 sudo lsof +L1
 ```
 
-Look for a large file on the affected filesystem, and note its process ID (`PID`), file descriptor (`FD`), and `SIZE/OFF`. For example, an FD shown as `4w` is descriptor **4**; `w` indicates write access. The displayed size is the logical size and may differ from the allocated blocks. Multiple entries can refer to the same file, so do not automatically add their sizes together.
+Among the results she found an entry like this:
 
-## Reclaim the space
+```text
+COMMAND   PID USER   FD   TYPE DEVICE    SIZE/OFF NLINK NODE NAME
+myapp    2481 app    4w   REG    8,1 60129542144     0 1234 /var/log/myapp/app.log (deleted)
+```
 
-Prefer the application's documented log-reopen mechanism or a service restart, after considering the impact on users:
+There was the missing log: roughly 56 GiB, marked `(deleted)`, and still open by process `2481`. The `4w` in the `FD` column meant file descriptor **4**, open for writing.
+
+The size shown by `lsof` is the file's logical size, which can differ from its allocated disk space. Multiple entries may also refer to the same file, so their sizes should not automatically be added together.
+
+## Why deleting it hadn't helped
+
+When Sara's teammate removed the log, `rm` removed its directory entry. The application, however, still had the file open. The kernel therefore kept the file and its allocated blocks available to the process.
+
+`du` could no longer find the file by walking the directory tree, but `df` still counted its blocks as used. The space would become available after the remaining references to the unlinked file were released.
+
+## Getting the space back
+
+Sara checked the application's documentation and confirmed that restarting the service would close its log. After coordinating a short interruption, she ran:
 
 ```bash
-sudo systemctl restart <service-name>
+sudo systemctl restart myapp.service
 df -h /
 ```
 
-Space is reclaimed once all references to the unlinked file are released; another process may still hold it open. Check `lsof +L1` again if space does not return.
+The application closed its old descriptor, and the free space returned. If another process had still held the file open, Sara would have needed to investigate that process too. Running `sudo lsof +L1` again is a useful check when space does not return.
 
-If a restart or reopen is not immediately possible, truncating an identified regular log file through its descriptor can be an emergency measure:
+### If a restart must wait
+
+For an identified regular log file, truncating it through the open descriptor can be an emergency measure:
 
 ```bash
 sudo truncate -s 0 /proc/<PID>/fd/<FD-number>
 ```
 
-Verify the process and descriptor immediately before running this command. It permanently discards the file's contents and can disrupt the application; continued writes may also grow it again. A process that does not use append mode may continue writing at its old offset, creating a sparse file. Do not use this on databases or other files without understanding the application's behavior. Recheck `df` afterward.
+Verify the process and descriptor immediately before using the command. Truncation permanently discards the file's contents and can disrupt the application. Continued writes may grow it again; a process that does not use append mode may write at its old offset and create a sparse file. Do not use this on databases or other files without understanding the application's behavior. Check `df` afterward.
 
-## Prevention
+## Preventing a repeat
 
-Use the application's supported log rotation or configure `logrotate`. A `postrotate` script can ask an application that supports it to close and reopen its log after rotation; the appropriate signal depends on the application. `copytruncate` retains the same open file, but log entries written between the copy and truncate steps can be lost. Prefer a supported reopen mechanism when available.
+After the incident, Sara configured log rotation using the application's documented reopen mechanism. With `logrotate`, a `postrotate` script can signal an application that supports reopening its logs; the correct signal depends on the application.
+
+Another option is `copytruncate`, which copies the log and truncates the original while the application keeps it open. It can lose entries written between the copy and truncate steps, so a supported reopen mechanism is preferable when available.
