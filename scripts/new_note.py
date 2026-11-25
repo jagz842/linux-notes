@@ -27,10 +27,11 @@ def create_note(root, destination, title, today=None):
     topic = destination.split('/')[0]
     if topic == 'inbox' and destination != 'inbox':
         raise ValueError('Use inbox without a subfolder.')
-    base = root / 'inbox' if topic == 'inbox' else root / topic
+    notes = root / 'notes'
+    base = notes / topic
     if not (base / 'README.md').is_file():
         raise ValueError(f'Unknown topic: {topic}. Choose a topic from docs/topics.md or use inbox.')
-    folder = root / 'inbox' if topic == 'inbox' else root / destination
+    folder = notes / destination
     # Resolve symlinks before writing, too.
     if not folder.resolve().is_relative_to(root.resolve()):
         raise ValueError('The destination must stay inside this repository.')
@@ -43,15 +44,16 @@ def create_note(root, destination, title, today=None):
     path = folder / (slug + '.md')
     if path.exists() or path.is_symlink():
         raise ValueError(f'Note already exists: {path.relative_to(root)}. Update it and log the change manually.')
-    latest = root / 'LATEST.md'
+    docs = root / 'docs'
+    latest = docs / 'LATEST.md'
     log = latest.read_text(encoding='utf-8')
     if log.count(MARKER) != 1:
-        raise ValueError('LATEST.md must contain exactly one <!-- entries --> marker.')
-    template = (root / 'templates/note.md').read_text(encoding='utf-8')
+        raise ValueError('docs/LATEST.md must contain exactly one <!-- entries --> marker.')
+    template = (docs / 'templates/note.md').read_text(encoding='utf-8')
     values = {'title': markdown_text(title), 'date': today, 'topic': destination}
     content = re.sub(r'\{\{(title|date|topic)\}\}', lambda match: values[match[1]], template)
     relative = path.relative_to(root).as_posix()
-    entry = f'- [ ] {today} — [{markdown_text(title)}]({relative}) — Added for review.'
+    entry = f'- [ ] {today} — [{markdown_text(title)}](../{relative}) — Added for review.'
     index = base / 'README.md'
     index_text = index.read_text(encoding='utf-8')
     if topic != 'inbox':
@@ -78,7 +80,7 @@ def main():
         path = create_note(ROOT, args.destination, args.title)
     except (ValueError, OSError) as error:
         parser.exit(1, f'Error: {error}\n')
-    print(f'Created {path}\nAdded to LATEST.md. Fill in your note, then review it when ready.')
+    print(f'Created {path}\nAdded to docs/LATEST.md. Fill in your note, then review it when ready.')
 
 
 if __name__ == '__main__':
